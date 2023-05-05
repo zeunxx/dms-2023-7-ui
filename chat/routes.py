@@ -1,7 +1,9 @@
 from flask import session, redirect, url_for, render_template, request, Blueprint
+from flask_cors import CORS
+
 
 main = Blueprint('main', __name__)
-
+cors = CORS(main, resources={r"/*": {"origins": "*"}})
 
 @main.route('/', methods=['GET', 'POST'])
 def index():
@@ -19,3 +21,4 @@ def chat():
     if name == '' or room == '':
         return redirect(url_for('.index'))
     return render_template('chat.html', name=name, room=room)
+
