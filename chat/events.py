@@ -18,7 +18,7 @@ class ChatNamepsace(Namespace):
 
     def on_text(self, data):
         room = session.get('room')
-        emit('message', {'msg': session.get('name') + ':' + data['msg']}, room=room)
+        emit('message', {'msg': session.get('name') + ':' + data['msg'] + '/' + data['timestamp']}, room=room)
 
     def on_left(self, data):
         room = session.get('room')

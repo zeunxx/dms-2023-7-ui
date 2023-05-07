@@ -15,7 +15,10 @@
                     $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
                     $('#chat').scrollTop($('#chat')[0].scrollHeight);
                 });
-          
+                socket.on('message', function(data) {
+                    $('#chat').val($('#chat').val() + data.msg + '\n');
+                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                });
             });
 
 
@@ -64,23 +67,27 @@
             }
 
             // kafka consumer 서버에 유저가 작성한 메시지 받아오기
-            function msg_get(){
+            /* function msg_get(){
                 // kafka 서버에서 메시지 수신
                 // (각자가 만든 kafka 서버로 port 번호 바꿔야 함)
                 const response2 = fetch("http://localhost:8989/msg_get", {
-                    method: "POST",
-                    redirect: "follow"
+                    method: "GET",
                   })
-                return response2.then(res=>res.json()).then(res => console.log(res));
-            }
+                //return response2.then(res=>res.text()).then(res => console.log(res));
+                return response2.then(response => response.json()).then(data => console.log(data));
+            }*/
             async function exec_get(){
                 var text_get;
                 var msg_get;
+                var time_get;
                 try{
-                    text_get = await msg_get();
-                    console.log(text_get);
-                    msg_get = text_get.message
-                    socket.emit('text', {msg: msg_get});
+                    //text_get = await msg_get();
+                    text_get = await fetch("http://localhost:8989/msg_get", {method: "GET"}).then(response => response.json());
+                    //console.log(text_get);
+                    msg_get = text_get.content;
+                    time_get = text_get.timestamp;
+
+                    socket.emit('text', {msg: msg_get, timestamp: time_get});
                 }catch(error){
                     console.log("################# 에러!!!!!!!!!!!!",error);
                 }
@@ -103,10 +110,10 @@
     </head>
     <body>
         <h1>Chat Room: {{ room }}</h1>
-        <h3>edited by IML<h3>
+        <h3>edited by IML</h3>
         <textarea id="chat" cols="80" rows="20"></textarea><br><br>
         {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"><br><br>
-        <button onclick="msg_send();">전송</button> <br><button onclick="msg_get();">새로고침</button> <br>
+        <button onclick="msg_send();">전송</button> <br><button onclick="exec_get();">새로고침</button> <br>
         <a href="#" onclick="leave_room();">채팅방 나가기</a>
 
     </body>
