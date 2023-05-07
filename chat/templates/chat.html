@@ -18,6 +18,7 @@
           
             });
 
+
             // kafka producer서버에 유저가 작성한 메시지 전송
             function msg_send(){
 
@@ -61,6 +62,33 @@
                     console.log("################# 에러!!!!!!!!!!!!",error);
                 }
             }
+
+            // kafka consumer 서버에 유저가 작성한 메시지 받아오기
+            function msg_get(){
+                // kafka 서버에서 메시지 수신
+                // (각자가 만든 kafka 서버로 port 번호 바꿔야 함)
+                const response2 = fetch("http://localhost:8989/msg_get", {
+                    method: "POST",
+                    redirect: "follow"
+                  })
+                return response2.then(res=>res.json()).then(res => console.log(res));
+            }
+            async function exec_get(){
+                var text_get;
+                var msg_get;
+                try{
+                    text_get = await msg_get();
+                    console.log(text_get);
+                    msg_get = text_get.message
+                    socket.emit('text', {msg: msg_get});
+                }catch(error){
+                    console.log("################# 에러!!!!!!!!!!!!",error);
+                }
+            }
+
+
+
+
             // 유저가 방 나감
             function leave_room() {
                 console.log("#################### 나감")
@@ -78,7 +106,7 @@
         <h3>edited by IML<h3>
         <textarea id="chat" cols="80" rows="20"></textarea><br><br>
         {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"><br><br>
-        <button onclick="msg_send();">전송</button> <br>
+        <button onclick="msg_send();">전송</button> <br><button onclick="msg_get();">새로고침</button> <br>
         <a href="#" onclick="leave_room();">채팅방 나가기</a>
 
     </body>
