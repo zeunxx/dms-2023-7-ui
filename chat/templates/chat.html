@@ -40,7 +40,6 @@
                 const text = document.getElementById('text').value;
                 
                 // kafka 서버에 메시지 전송
-                // (각자가 만든 kafka 서버로 port 번호 바꿔야 함)
                 const response = fetch("http://localhost:8989/msg_send", {
                     method: "POST",
                     headers: {
@@ -77,20 +76,33 @@
                 return response2.then(response => response.json()).then(data => console.log(data));
             }*/
             async function exec_get(){
+
+                // text get
                 var text_get;
                 var msg_get;
                 var time_get;
                 try{
                     //text_get = await msg_get();
                     text_get = await fetch("http://localhost:8989/msg_get", {method: "GET"}).then(response => response.json());
-                    //console.log(text_get);
+                    console.log("################################ ",text_get);
                     msg_get = text_get.content;
-                    time_get = text_get.timestamp;
-
-                    socket.emit('text', {msg: msg_get, timestamp: time_get});
+                    time_get = "   ("+text_get.timestamp+")";
+                
+                    socket.emit('text', {msg: msg_get,timestamp: time_get});
                 }catch(error){
                     console.log("################# 에러!!!!!!!!!!!!",error);
                 }
+
+                // image get 
+                const imageUrl = "https://2023-dms-kafka-image.s3.ap-northeast-2.amazonaws.com/test/bear.jpg"
+                // 이미지 엘리먼트 생성
+                const imageElement = document.createElement('img');
+                imageElement.src = imageUrl;
+
+                const chatContainer = document.getElementById('chat_img');
+                chatContainer.appendChild(imageElement);
+
+                
             }
 
 
@@ -110,10 +122,11 @@
     </head>
     <body>
         <h1>Chat Room: {{ room }}</h1>
-        <h3>edited by IML</h3>
-        <textarea id="chat" cols="80" rows="20"></textarea><br><br>
-        {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"><br><br>
-        <button onclick="msg_send();">전송</button> <br><button onclick="exec_get();">새로고침</button> <br>
+        <h3>DMS 7 team <button onclick="exec_get();">새로고침</button> </h3>  
+        <div id="chat_img"  contentEditable="true" style="border:1px solid; width:500px; height:300px;" ></div><br>
+        <textarea id="chat" cols="80" rows="20"></textarea><br><br><br><br>
+        {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"> 
+        <button onclick="msg_send();">전송</button>   <br>
         <a href="#" onclick="leave_room();">채팅방 나가기</a>
 
     </body>
