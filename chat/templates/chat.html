@@ -21,6 +21,19 @@
                 });
             });
 
+            $(document).ready(function() {
+                var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+                function updateImage(imageUrl) {
+                    $('#dynamic-image').attr('src', imageUrl);
+                }
+    
+                // WebSocket 이벤트를 수신하여 이미지 URL을 업데이트합니다.
+                socket.on('image', function(data) {
+                    var imageUrl = data.image_url;
+                    updateImage(imageUrl);
+                }, namespace='/test');
+            });
+
 
             // kafka producer서버에 유저가 작성한 메시지 전송
             function msg_send(){
@@ -93,6 +106,7 @@
                     console.log("################# 에러!!!!!!!!!!!!",error);
                 }
 
+                /**
                 // image get 
                 const imageUrl = "https://2023-dms-kafka-image.s3.ap-northeast-2.amazonaws.com/test/bear.jpg"
                 // 이미지 엘리먼트 생성
@@ -101,7 +115,7 @@
 
                 const chatContainer = document.getElementById('chat_img');
                 chatContainer.appendChild(imageElement);
-
+                **/
                 
             }
 
@@ -123,6 +137,7 @@
     <body>
         <h1>Chat Room: {{ room }}</h1>
         <h3>DMS 7 team <button onclick="exec_get();">새로고침</button> </h3>  
+        <img id="dynamic-image" src="" alt="Dynamic Image">
         <div id="chat_img"  contentEditable="true" style="border:1px solid; width:500px; height:300px;" ></div><br>
         <textarea id="chat" cols="80" rows="20"></textarea><br><br><br><br>
         {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"> 
