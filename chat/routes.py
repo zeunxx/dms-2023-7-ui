@@ -23,3 +23,12 @@ def chat():
         return redirect(url_for('.index'))
     return render_template('chat.html', name=name, room=room)
 
+
+@main.route('/image', methods=['GET'])
+def image():
+    url = request.args.get('url')
+    print("################ ",url)
+    return "ok"+url;
+
+
+
