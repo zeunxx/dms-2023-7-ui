@@ -12,13 +12,41 @@
                 });
                 
                 socket.on('status', function(data) {
-                    $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                    // $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
+                    const div = document.getElementById('chat_img');
+                    div.append('<' + data.msg + '>');
+                    $('#chat_img').scrollTop($('#chat_img')[0].scrollHeight);
                 });
                 socket.on('message', function(data) {
-                    $('#chat').val($('#chat').val() + data.msg + '\n');
-                    $('#chat').scrollTop($('#chat')[0].scrollHeight);
+                    //$('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
+                    const div = document.getElementById('chat_img');
+                    div.append('<' + data.msg + '>');
+                    $('#chat_img').scrollTop($('#chat_img')[0].scrollHeight);
                 });
+            });
+
+            // 유저가 작성한 이미지 띄우기
+            $(document).ready(function() {
+                var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+                function updateImage(imageUrl) {
+                    $('#chat_img').append('<br> <img src="'+imageUrl+'"width="100px" height="100px" >')
+
+                }
+    
+                // WebSocket 이벤트를 수신하여 이미지 URL을 업데이트
+                socket.on('image', function(data) {
+                    var imageUrl = data.image_url;
+                    updateImage(imageUrl);
+
+                    const div = document.getElementById('chat_img');
+                    if (div.scrollHeight > div.offsetHeight) {
+                        var firstMessage = div.querySelector('p');
+                        div.removeChild(firstMessage);
+                      }
+                  
+                      // 스크롤 조작
+                    div.scrollTop = div.scrollHeight;
+                }, namespace='/test');
             });
 
 
@@ -66,46 +94,25 @@
             }
 
             // kafka consumer 서버에 유저가 작성한 메시지 받아오기
-            /* function msg_get(){
-                // kafka 서버에서 메시지 수신
-                // (각자가 만든 kafka 서버로 port 번호 바꿔야 함)
-                const response2 = fetch("http://localhost:8989/msg_get", {
-                    method: "GET",
-                  })
-                //return response2.then(res=>res.text()).then(res => console.log(res));
-                return response2.then(response => response.json()).then(data => console.log(data));
-            }*/
-            async function exec_get(){
+            $(document).ready(function() {
+                var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+    
+                socket.on('text', (data) => {
+                    // 데이터를 받아와서 div에 추가
+    
+                    const div = document.getElementById('chat_img');
+                    div.innerHTML += `<br>${data.writer} : ${data.content}  (${data.timestamp})`;
 
-                // text get
-                var text_get;
-                var msg_get;
-                var time_get;
-                try{
-                    //text_get = await msg_get();
-                    text_get = await fetch("http://localhost:8989/msg_get", {method: "GET"}).then(response => response.json());
-                    console.log("################################ ",text_get);
-                    msg_get = text_get.content;
-                    time_get = "   ("+text_get.timestamp+")";
+                    if (div.scrollHeight > div.offsetHeight) {
+                        var firstMessage = div.querySelector('p');
+                        div.removeChild(firstMessage);
+                      }
+                  
+                      // 스크롤 조작
+                      div.scrollTop = div.scrollHeight;
+                });
                 
-                    socket.emit('text', {msg: msg_get,timestamp: time_get});
-                }catch(error){
-                    console.log("################# 에러!!!!!!!!!!!!",error);
-                }
-
-                // image get 
-                const imageUrl = "https://2023-dms-kafka-image.s3.ap-northeast-2.amazonaws.com/test/bear.jpg"
-                // 이미지 엘리먼트 생성
-                const imageElement = document.createElement('img');
-                imageElement.src = imageUrl;
-
-                const chatContainer = document.getElementById('chat_img');
-                chatContainer.appendChild(imageElement);
-
-                
-            }
-
-
+            });
 
 
             // 유저가 방 나감
@@ -123,8 +130,9 @@
     <body>
         <h1>Chat Room: {{ room }}</h1>
         <h3>DMS 7 team <button onclick="exec_get();">새로고침</button> </h3>  
-        <div id="chat_img"  contentEditable="true" style="border:1px solid; width:500px; height:300px;" ></div><br>
-        <textarea id="chat" cols="80" rows="20"></textarea><br><br><br><br>
+       
+        <div id="chat_img" style="border:1px solid; width:500px; height:300px;" ></div><br><br>
+        
         {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"> 
         <button onclick="msg_send();">전송</button>   <br>
         <a href="#" onclick="leave_room();">채팅방 나가기</a>

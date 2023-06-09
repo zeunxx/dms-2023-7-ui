@@ -23,7 +23,7 @@ class ChatNamepsace(Namespace):
     def on_left(self, data):
         room = session.get('room')
         leave_room(room)
-        emit('status', {'msg': session.get('name') + '님이 퇴장하셨습니다'}, room=room)
+        emit('status', {'msg': session.get('name') + '님이 퇴장하셨습니다 \n'}, room=room)
         
     
 
