@@ -18,12 +18,14 @@ class ChatNamepsace(Namespace):
 
     def on_text(self, data):
         room = session.get('room')
-        emit('message', {'msg': session.get('name') + ':' + data['msg'] + '/' + data['timestamp']}, room=room)
-
+        emit('message', {'msg': session.get('name') + ':' + data['msg'] + data['timestamp']}, room=room)
+    
     def on_left(self, data):
         room = session.get('room')
         leave_room(room)
-        emit('status', {'msg': session.get('name') + '님이 퇴장하셨습니다'}, room=room)
+        emit('status', {'msg': session.get('name') + '님이 퇴장하셨습니다 \n'}, room=room)
+        
+    
 
 
 # 데코레이터 함수 기반 Namespace
