@@ -1,0 +1,201 @@
+<html>
+    <head>
+        <title>Flask-Simple-Chat</title>
+        <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+        <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/1.3.6/socket.io.min.js"></script>
+        <script type="text/javascript" charset="utf-8">
+            var socket;
+           $(document).ready(function(){
+                socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+                socket.on('connect', function() {
+                    socket.emit('joined', {});
+                });
+                
+                socket.on('status', function(data) {
+                    // $('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
+                    const div = document.getElementById('chat_img');
+                    div.append('<' + data.msg + '>');
+                    $('#chat_img').scrollTop($('#chat_img')[0].scrollHeight);
+                });
+                socket.on('message', function(data) {
+                    //$('#chat').val($('#chat').val() + '<' + data.msg + '>\n');
+                    const div = document.getElementById('chat_img');
+                    div.append('<' + data.msg + '>');
+                    $('#chat_img').scrollTop($('#chat_img')[0].scrollHeight);
+                });
+            });
+
+            // 유저가 작성한 이미지 띄우기
+            $(document).ready(function() {
+
+                // 유저가 작성 버튼 누른 시각 
+                var today = new Date(); 
+
+                var month = ('0' + (today.getMonth() + 1)).slice(-2);
+                var day = ('0' + today.getDate()).slice(-2);
+                var dateString = month  + '/' + day;  
+
+                var hours = ('0' + today.getHours()).slice(-2); 
+                var minutes = ('0' + today.getMinutes()).slice(-2);
+                var timeString = hours + ':' + minutes;
+
+
+
+                var socket = io.connect('http://' + document.domain + ':' + location.port + '/test');
+                function updateImage(imageUrl) {
+                    $('#chat_img').append('<br>  <img src="'+imageUrl+'"width="100px" height="100px" >' + " ("+dateString+ " "+ timeString+")")
+
+                }
+    
+                // WebSocket 이벤트를 수신하여 이미지 URL을 업데이트
+                socket.on('image', function(data) {
+                    var imageUrl = data.image_url;
+                    updateImage(imageUrl);
+
+                    const div = document.getElementById('chat_img');
+                    if (div.scrollHeight > div.offsetHeight) {
+                        var firstMessage = div.querySelector('p');
+                        div.removeChild(firstMessage);
+                      }
+                  
+                      // 스크롤 조작
+                    div.scrollTop = div.scrollHeight;
+                }, namespace='/test');
+            });
+
+
+            // kafka producer서버에 유저가 작성한 메시지 전송
+            function msg_send(){
+
+                // 유저가 작성 버튼 누른 시각 
+                var today = new Date(); 
+
+                var month = ('0' + (today.getMonth() + 1)).slice(-2);
+                var day = ('0' + today.getDate()).slice(-2);
+                var dateString = month  + '/' + day;  
+
+                var hours = ('0' + today.getHours()).slice(-2); 
+                var minutes = ('0' + today.getMinutes()).slice(-2);
+                var timeString = hours + ':' + minutes;
+
+                // 유저가 작성한 text 
+                const text = document.getElementById('text').value;
+                
+                // kafka 서버에 메시지 전송
+                const response = fetch("http://3.135.130.17:8989/msg_send", {
+                    method: "POST",
+                    headers: {
+                      "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        writer:"{{name}}",
+                        timestamp:String(dateString)+" "+String(timeString),
+                        content:String(text)
+                    }),
+                  })
+        
+                return response.then(res=>res.json());
+        
+            }
+            async function exec(){
+                var text;
+                try{
+                    text = await msg_send();
+                    console.log(text[0].content);
+                }catch(error){
+                    console.log("################# 에러!!!!!!!!!!!!",error);
+                }
+            }
+
+            // kafka producer서버에 유저가 작성한 이미지 전송
+            async function img_send(){
+                var file = $('#imageFile')[0].files[0];
+                
+
+                if (!file) {
+                    alert('파일을 선택해주세요.');
+                    return;
+                }
+                
+               
+                
+                const formData = new FormData();
+                formData.append('image', file);
+               
+                
+                try {
+                    const response = await fetch('http://3.135.130.17:8989/img_send', {  
+                        method: 'POST',
+                        body: formData
+                    });
+                
+                    if (response.ok) {
+                        alert('이미지가 업로드되었습니다.');
+                    } else {
+                        alert('이미지 업로드에 실패했습니다.');
+                    }
+                    } catch (error) {
+                    console.error(error);
+                    alert('이미지 업로드에 실패했습니다.');
+                } 
+   
+            }
+        
+
+            // kafka consumer 서버에 유저가 작성한 메시지 받아오기
+            $(document).ready(function() {
+                var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
+    
+                socket.on('text', (data) => {
+                    // 데이터를 받아와서 div에 추가
+		            console.log("####################################3333333333",data);    
+                    const div = document.getElementById('chat_img');
+                    div.innerHTML += `<br>${data.writer} : ${data.content}  (${data.timestamp})`;
+
+                    if (div.scrollHeight > div.offsetHeight) {
+                        var firstMessage = div.querySelector('p');
+                        div.removeChild(firstMessage);
+                      }
+                  
+                      // 스크롤 조작
+                      div.scrollTop = div.scrollHeight;
+                });
+                
+            });
+
+
+            // 유저가 방 나감
+            function leave_room() {
+                console.log("#################### 나감")
+                socket.emit('left', {}, function() {
+                    socket.disconnect();
+
+                    // go back to the login page
+                    window.location.href = "{{ url_for('main.index') }}";
+                });
+            }
+        </script>
+    </head>
+    <body>
+        <h1>Chat Room: {{ room }}</h1>
+        <h3>DMS 7 team <a href="#" onclick="leave_room();">채팅방 나가기</a> </h3>  
+       
+        <div id="chat_img" style="border:1px solid; width:700px; height:400px;" ></div>
+        
+        {{ name }} <input id="text" size="80" placeholder="메시지를 입력해보세요!"> 
+        <button onclick="msg_send();">전송</button>   <br><br>
+
+        
+        <div class="button">
+            <label for="chooseFile">
+                👉 send image 👈
+            </label>
+        </div>
+        <input type="file" id="imageFile" accept="image/*">
+        
+        <button class="submitButton" id="submitButton" onclick="img_send();">전송</button>
+
+        
+
+    </body>
+</html>
