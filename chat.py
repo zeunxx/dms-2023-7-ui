@@ -1,6 +1,12 @@
 from chat import create_app, socketio
 from flask import session, redirect,  request, jsonify
+from flask_cors import CORS
+import json
+
+import flask
 app = create_app(debug=True)
+cors = CORS(app, resources={r"/*": {"origins": "*"}})
+
 
 # api 통해 이미지 url 받아 socket에 emit해 채팅에 띄움
 @app.route('/image', methods=['GET'])
@@ -15,9 +21,12 @@ def image():
 @app.route('/consumer', methods=['POST'])
 def message_get():
     message = request.get_json()
+    message = json.loads(message);
+
     socketio.emit('text',message, broadcast=True, namespace='/chat')
     return jsonify({'status': 'success'})
 
 
 if __name__ == '__main__':
     socketio.run(app,host='0.0.0.0', debug=True)
+
