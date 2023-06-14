@@ -45,6 +45,7 @@
                 function updateImage(imageUrl) {
                     $('#chat_img').append('<br>  <img src="'+imageUrl+'"width="100px" height="100px" >' + " ("+dateString+ " "+ timeString+")")
 
+
                 }
     
                 // WebSocket 이벤트를 수신하여 이미지 URL을 업데이트
@@ -82,7 +83,9 @@
                 const text = document.getElementById('text').value;
                 
                 // kafka 서버에 메시지 전송
+
                 const response = fetch("http://3.135.130.17:8989/msg_send", {
+
                     method: "POST",
                     headers: {
                       "Content-Type": "application/json",
@@ -142,13 +145,13 @@
             }
         
 
+
             // kafka consumer 서버에 유저가 작성한 메시지 받아오기
             $(document).ready(function() {
                 var socket = io.connect('http://' + document.domain + ':' + location.port + '/chat');
     
                 socket.on('text', (data) => {
                     // 데이터를 받아와서 div에 추가
-		            console.log("####################################3333333333",data);    
                     const div = document.getElementById('chat_img');
                     div.innerHTML += `<br>${data.writer} : ${data.content}  (${data.timestamp})`;
 
@@ -199,3 +202,4 @@
 
     </body>
 </html>
+
