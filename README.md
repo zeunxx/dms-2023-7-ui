@@ -22,10 +22,12 @@ kafka와 flask를 사용한 단체 채팅 어플리케이션 서비스
 |이지영|202012316|kafka server와 chatting server 개발 및 배포, 방해금지모드 개발 (배치 처리 이용)|
 |이의석|202372193|발표 자료 작성, UI 개발|
 
+- 개발기간 : 2023.04.28 ~ 2023.06.19
+
 <br>
 
 
-### 💡 요구사항
+### 💡 요구사항 및 주요 기능
 
 <img width="367" alt="image" src="https://github.com/zeunxx/dms-2023-7-project/assets/81572478/cd1707e5-33a9-4083-95fa-38d9e6b22f1f">
 
@@ -57,11 +59,21 @@ kafka와 flask를 사용한 단체 채팅 어플리케이션 서비스
 
 
 
+<br><br>
 
+### 🔎 기술 스택
+- HTML/CSS/Java script
+- Web Socket
+- Flask
+- AWS EC2, S3, Lambda
 
 
 <br>
 
- #### 📌 서버 주소
+ #### 📌 서버 주소 및 실행 방법 
 - kafka server : http://3.135.130.17:8989/
 - ui server : http://18.221.31.141:5000/
+  - UI 서버에 들어가면 바로 채팅 홈 화면이 나온다!
+ 
+    
+  
